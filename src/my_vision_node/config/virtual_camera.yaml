@@ -1,0 +1,20 @@
+virtual_camera_node:
+  ros__parameters:
+    source: "0"
+    topic_name: "/image_raw"
+    frame_id: "camera"
+    width: 640
+    height: 480
+    fps: 30
+    loop_video: true
+
+virtual_camera_info_node:
+  ros__parameters:
+    frame_id: "camera"
+    width: 640
+    height: 480
+    fx: 600.0
+    fy: 600.0
+    cx: 320.0
+    cy: 240.0
+    fps: 30.0
