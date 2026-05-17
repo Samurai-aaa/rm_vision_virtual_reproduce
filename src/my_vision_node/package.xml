@@ -1,18 +1,38 @@
 <?xml version="1.0"?>
+<!-- package.xml 负责声明“这个包是谁、依赖什么、用什么方式构建”。 -->
+
 <package format="3">
+  <!-- ROS 2 功能包名称 -->
   <name>my_vision_node</name>
+
+  <!-- 当前包版本号 -->
   <version>0.0.0</version>
+
+  <!-- 功能包简介 -->
   <description>Virtual camera node for RoboMaster vision algorithm testing.</description>
-  <maintainer email="your_email@example.com">your_name</maintainer>
+
+  <!-- 维护者信息 -->
+  <maintainer email="samurai@example.com">samurai</maintainer>
+
+  <!-- 开源许可证 -->
   <license>Apache-2.0</license>
 
+  <!-- 使用 ament_cmake 作为 ROS 2 C++ 包的构建工具 -->
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <!-- rclcpp：ROS 2 C++ 节点、发布者、参数、定时器等基础功能 -->
   <depend>rclcpp</depend>
+
+  <!-- sensor_msgs：提供 Image 和 CameraInfo 等传感器消息类型 -->
   <depend>sensor_msgs</depend>
+
+  <!-- std_msgs：提供 Header 等基础消息类型 -->
   <depend>std_msgs</depend>
+
+  <!-- cv_bridge：用于 OpenCV cv::Mat 和 ROS 2 Image 消息之间转换 -->
   <depend>cv_bridge</depend>
 
+  <!-- 声明该包使用 ament_cmake 构建 -->
   <export>
     <build_type>ament_cmake</build_type>
   </export>

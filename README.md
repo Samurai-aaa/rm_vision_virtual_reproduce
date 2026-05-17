@@ -8,14 +8,15 @@
 
 ## 2. 项目结构
 
-```text
+## Project Structure
+
 rm_ws/
-├── src/
-│   ├── my_vision_node/      # 自写虚拟相机与 camera_info 节点
-│   ├── rm_auto_aim/
-│   └── rm_vision/
-├── docs/
-├── scripts/
-├── build/
-├── install/
-└── log/
+├── src/                          # ROS 2 workspace source directory
+│   ├── my_vision_node/           # 自写虚拟相机功能包，发布 /image_raw 和 /camera_info
+│   ├── rm_auto_aim/              # 官方自瞄核心代码，包含 armor_detector 等模块
+│   └── rm_vision/                # 官方 bringup/config 参考工程
+├── docs/                         # 复现文档、节点说明、常见问题记录
+├── scripts/                      # 快捷脚本，例如 topic 检查和结果图查看
+├── build/                        # colcon 自动生成的编译中间目录，不提交
+├── install/                      # colcon 自动生成的安装目录，不提交
+└── log/                          # colcon 自动生成的编译日志目录，不提交

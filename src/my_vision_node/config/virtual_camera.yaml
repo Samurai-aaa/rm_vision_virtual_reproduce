@@ -1,20 +1,51 @@
+# 这个文件用于配置虚拟相机节点和 camera_info 节点的参数
+# launch 文件会读取这里的参数，并传给对应 ROS 2 节点
+
 virtual_camera_node:
   ros__parameters:
+    # 图像输入源
     source: "0"
+
+    # 发布的图像话题名称
     topic_name: "/image_raw"
+
+    # 图像坐标系名称。
+    # 后续 camera_info 和检测结果最好使用同一个 frame_id
     frame_id: "camera"
+
+    # 期望图像宽度
     width: 640
+
+    # 期望图像高度
     height: 480
+
+    # 图像发布帧率
     fps: 30
+
+    # 如果 source 是视频文件，播放结束后是否循环播放
     loop_video: true
+
 
 virtual_camera_info_node:
   ros__parameters:
+    # camera_info 的坐标系名称，需要和图像 frame_id 保持一致
     frame_id: "camera"
+
+    # 图像宽度，需要和虚拟相机节点保持一致
     width: 640
+
+    # 图像高度，需要和虚拟相机节点保持一致
     height: 480
+
+    # fx, fy 是相机焦距，单位是像素
+    # 当前是近似虚拟内参，只用于打通 PnP 流程
     fx: 600.0
     fy: 600.0
+
+    # cx, cy 是相机光心坐标，通常接近图像中心
+    # 对 640x480 图像来说，中心大约是 320, 240
     cx: 320.0
     cy: 240.0
+
+    # camera_info 发布频率
     fps: 30.0
