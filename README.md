@@ -6,7 +6,7 @@
 
 在 Ubuntu 22.04 + ROS 2 Humble 环境下，通过自写虚拟相机节点，将普通摄像头或本地视频转换为 ROS 2 图像话题 `/image_raw`，接入官方 `armor_detector`，实现装甲板检测链路的最小复现。
 
-## 项目目录结构
+## 2. 项目目录结构
 
 ```text
 rm_ws/
