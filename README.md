@@ -19,3 +19,18 @@ rm_ws/
 ├── build/                  # colcon 自动生成的编译中间目录，不提交
 ├── install/                # colcon 自动生成的安装目录，不提交
 └── log/                    # colcon 自动生成的编译日志目录，不提交
+
+## 3.启动测试
+
+```bash
+# 1. 进入工作空间并加载环境
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+# 2. 编译工程
+colcon build --symlink-install
+source install/setup.bash
+
+# 3. 一键启动虚拟相机、camera_info 和官方 armor_detector
+ros2 launch my_vision_node virtual_detector.launch.py
