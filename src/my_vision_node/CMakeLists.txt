@@ -40,6 +40,8 @@ add_executable(vision_node src/vision_node.cpp)
 # 将 src/camera_info_node.cpp 编译成可执行文件 camera_info_node
 add_executable(camera_info_node src/camera_info_node.cpp)
 
+# 将detector处理过后的视频保存为mp4文件
+add_executable(result_video_saver_node src/result_video_saver_node.cpp)
 
 # 声明 vision_node 依赖的 ROS 2 包
 ament_target_dependencies(vision_node
@@ -50,29 +52,40 @@ ament_target_dependencies(vision_node
 )
 
 # 声明 camera_info_node 依赖的 ROS 2 包
-# camera_info_node 不需要 OpenCV，也不需要 cv_bridge
 ament_target_dependencies(camera_info_node
   rclcpp
   sensor_msgs
 )
 
-
+# 声明result_video_saver_node 以来的ROS 2 包
+ament_target_dependencies(result_video_saver_node
+  rclcpp
+  sensor_msgs
+  cv_bridge
+)
 # 给 vision_node 添加 OpenCV 头文件路径
 target_include_directories(vision_node PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 
 # 将 OpenCV 库链接到 vision_node
-# 因为 vision_node 使用 cv::VideoCapture、cv::Mat 等 OpenCV 功能
 target_link_libraries(vision_node
   ${OpenCV_LIBS}
 )
 
+target_include_directories(result_video_saver_node PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
 
-# 安装两个可执行文件
+target_link_libraries(result_video_saver_node
+  ${OpenCV_LIBS}
+)
+
+# 安装三个可执行文件
 install(TARGETS
   vision_node
   camera_info_node
+  result_video_saver_node
   DESTINATION lib/${PROJECT_NAME}
 )
 
