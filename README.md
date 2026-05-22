@@ -8,31 +8,100 @@
 
 ## 2. 项目目录结构
 
+## 项目结构
+
 ```text
 rm_ws/
-├── src/                    # ROS 2 workspace source directory
-│   ├── my_vision_node/      # 自写虚拟相机功能包，发布 /image_raw 和 /camera_info
-│   ├── rm_auto_aim/         # 官方自瞄核心代码，包含 armor_detector 等模块
-│   └── rm_vision/           # 官方 bringup / config 参考工程
-├── docs/                   # 复现文档、节点说明、常见问题记录
-├── scripts/                # 快捷脚本，例如 topic 检查和结果图查看
-├── build/                  # colcon 自动生成的编译中间目录，不提交
-├── install/                # colcon 自动生成的安装目录，不提交
-└── log/                    # colcon 自动生成的编译日志目录，不提交
+├── README.md                         # 项目总说明：目标、环境、运行方式、个人贡献
+├── .gitignore                        # 忽略 build/install/log、视频、rosbag 等文件
+│
+├── docs/                             # 复现文档与分享会材料
+│   ├── 01_project_overview.md         # 项目背景、总体目标、工作空间结构
+│   ├── 02_virtual_camera_node.md      # my_vision_node 虚拟相机节点说明
+│   ├── 03_camera_info_and_pnp.md      # camera_info 与 PnP 解算关系
+│   ├── 04_armor_detector_pipeline.md # 官方 armor_detector 源码与算法流程
+│   ├── 05_common_errors.md            # 复现过程常见错误与解决方案
+│   ├── 06_simple_armor_detector.md   # 手写简化版 detector 的设计与实现
+│   └── 07_experiment_result.md        # 实验截图、topic 检查、检测效果记录
+│
+├── scripts/                          # 辅助脚本
+│   ├── check_topics.sh                # 检查 /image_raw、/camera_info、detector 话题
+│   ├── view_result.sh                 # 查看官方 /detector/result_img
+│   └── view_simple_result.sh          # 查看手写版 /simple_detector/result_img
+│
+├── src/                              # ROS 2 源码目录
+│   ├── my_vision_node/                # 自写虚拟相机与 camera_info 功能包
+│   │   ├── config/
+│   │   │   └── virtual_camera.yaml     # 摄像头/视频输入、camera_info 参数
+│   │   ├── launch/
+│   │   │   └── virtual_detector.launch.py
+│   │   ├── src/
+│   │   │   ├── vision_node.cpp         # 摄像头/MP4/AVI转码视频 → /image_raw
+│   │   │   └── camera_info_node.cpp    # 虚拟相机内参 → /camera_info
+│   │   ├── CMakeLists.txt
+│   │   └── package.xml
+│   │
+│   ├── simple_armor_detector/         # 手写简化版装甲板检测器
+│   │   ├── config/
+│   │   │   └── simple_detector.yaml    # 阈值、灯条筛选、装甲板匹配参数
+│   │   ├── launch/
+│   │   │   └── simple_detector.launch.py
+│   │   ├── src/
+│   │   │   └── simple_detector_node.cpp
+│   │   ├── CMakeLists.txt
+│   │   ├── package.xml
+│   │   └── README.md
+│   │
+│   ├── rm_auto_aim/                   # 官方/叉取的自瞄核心算法模块
+│   │   ├── armor_detector/             # 官方装甲板检测模块
+│   │   ├── armor_tracker/              # 官方追踪模块
+│   │   ├── auto_aim_interfaces/        # 官方自定义消息
+│   │   └── rm_auto_aim/                # 自瞄模块入口
+│   │
+│   └── rm_vision/                     # 官方/叉取的 bringup 与配置参考
+│       └── rm_vision_bringup/
+│
+├── build/                             # colcon 自动生成，不提交
+├── install/                           # colcon 自动生成，不提交
+└── log/                               # colcon 自动生成，不提交
 
 ```
 
 ## 3.启动测试
 
+```markdown
+
+### 1. 编译
+
 ```bash
-# 1. 进入工作空间并加载环境
+
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+
+colcon build --symlink-install
+
+source install/setup.bash
+
+```
+### 2. 启动虚拟相机、canera_info、simple_armor_detector
+
+```bash
+
 cd ~/rm_ws
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 
-# 2. 编译工程
-colcon build --symlink-install
-source install/setup.bash
+ros2 launch simple_armor_detector simple_detector.launch.py
 
-# 3. 一键启动虚拟相机、camera_info 和官方 armor_detector
-ros2 launch my_vision_node virtual_detector.launch.py
+```
+### 3. 查看
+
+```bash
+#结果图
+ros2 run rqt_image_view rqt_image_view /simple_detector/result_img
+#二值图
+ros2 run rqt_image_view rqt_image_view /simple_detector/binary_img
+#Marker输出
+ros2 topic echo /simple_detector/markers --once
+
+```

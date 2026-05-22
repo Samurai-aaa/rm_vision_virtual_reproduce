@@ -6,6 +6,7 @@
 #include "cv_bridge/cv_bridge.h"
 #include "opencv2/opencv.hpp"
 
+//此文件用于将检测结果视频保存到本地，方便调试和展示。它订阅了检测结果图像话题，并使用OpenCV将图像写入视频文件中。
 class ResultVideoSaverNode : public rclcpp::Node
 {
 public:
