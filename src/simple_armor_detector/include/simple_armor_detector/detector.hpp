@@ -69,7 +69,9 @@ private:
 
   bool isValidArmorPair(const Light & left, const Light & right);
 
-    bool containLight(const Light & light_1, const Light & light_2, const std::vector<Light> & lights);
+  bool containLight(const Light & light_1, const Light & light_2, const std::vector<Light> & lights);
+    
+  double calcArmorScore(const Light & left, const Light & right);
 
   std::vector<cv::Point2f> getArmorPoints(const Light & left, const Light & right);
 

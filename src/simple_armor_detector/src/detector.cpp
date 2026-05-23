@@ -147,31 +147,73 @@ bool Detector::isValidLight(const Light & light)
 // 装甲板匹配
 std::vector<SimpleArmor> Detector::matchArmors(const std::vector<Light> & lights)
 {
+  struct ArmorCandidate
+  {
+    size_t left_index;
+    size_t right_index;
+    SimpleArmor armor;
+    double score;
+  };
+
+  std::vector<ArmorCandidate> candidates;
+
+  // 1. 只生成“相邻灯条”的候选对
+  if (lights.size() < 2) {
+    return {};
+  }
+
+  for (size_t i = 0; i + 1 < lights.size(); ++i) {
+    size_t j = i + 1;
+
+    const auto & left = lights[i];
+    const auto & right = lights[j];
+
+    if (!isValidArmorPair(left, right)) {             // 过滤掉明显不合理的灯条组合
+      continue;
+    }
+
+    if (containLight(left, right, lights)) {          // 过滤掉灯条之间有其他灯条的组合，避免误匹配
+      continue;
+    }
+    
+    // 生成装甲板候选
+    SimpleArmor armor;
+    armor.left_light = left;
+    armor.right_light = right;
+    armor.center = (left.center + right.center) * 0.5f;
+    armor.points = getArmorPoints(left, right);
+    armor.type = judgeArmorType(left, right);
+
+    // 计算装甲板得分，得分越低表示越合理
+    ArmorCandidate candidate;
+    candidate.left_index = i;
+    candidate.right_index = j;
+    candidate.armor = armor;
+    candidate.score = calcArmorScore(left, right);
+
+    candidates.emplace_back(candidate);
+  }
+
+  // 2. 按得分排序，优先选择最合理的候选
+  std::sort(
+    candidates.begin(), candidates.end(),
+    [](const ArmorCandidate & a, const ArmorCandidate & b) {
+      return a.score < b.score;
+    });
+
+  // 3. 灯条独占：每根灯条最多只能参与一个 armor
+  std::vector<bool> used(lights.size(), false);
   std::vector<SimpleArmor> armors;
 
-  for (size_t i = 0; i < lights.size(); ++i) {                  // 遍历所有灯条组合
-    for (size_t j = i + 1; j < lights.size(); ++j) {
-      const auto & left = lights[i];
-      const auto & right = lights[j];
-
-      if (!isValidArmorPair(left, right)) {                     // 过滤掉不符合条件的装甲板组合
-        continue;
-      }
-
-      if (containLight(left, right, lights)) {                  // 过滤掉被其他灯条遮挡的装甲板组合
-       continue;
-      }
-      
-      // 填充装甲板信息
-      SimpleArmor armor;
-      armor.left_light = left;
-      armor.right_light = right;
-      armor.center = (left.center + right.center) * 0.5f;
-      armor.points = getArmorPoints(left, right);
-      armor.type = judgeArmorType(left, right);
-
-      armors.emplace_back(armor);
+  for (const auto & candidate : candidates) {
+    if (used[candidate.left_index] || used[candidate.right_index]) {
+      continue;
     }
+
+    armors.emplace_back(candidate.armor);
+
+    used[candidate.left_index] = true;
+    used[candidate.right_index] = true;
   }
 
   return armors;
@@ -254,6 +296,29 @@ bool Detector::containLight(                               // 判断灯条之间
   }
 
   return false;
+}
+
+double Detector::calcArmorScore(const Light & left, const Light & right)
+{
+  const double avg_height = (left.height + right.height) / 2.0;
+  if (avg_height < 1e-3) {
+    return 1e9;
+  }
+
+  const double angle_diff = std::abs(left.angle - right.angle);
+  const double height_diff_ratio = std::abs(left.height - right.height) / avg_height;
+  const double y_diff_ratio = std::abs(left.center.y - right.center.y) / avg_height;
+  const double x_diff = std::abs(left.center.x - right.center.x);
+  const double armor_ratio = x_diff / avg_height;
+
+  // 你的场景主要是小装甲板候选，2.0~2.5 一般比较合理
+  const double preferred_ratio = 2.2;
+  const double ratio_score = std::abs(armor_ratio - preferred_ratio);
+
+  return angle_diff * 1.0 +
+         height_diff_ratio * 35.0 +
+         y_diff_ratio * 35.0 +
+         ratio_score * 12.0;
 }
 
 // 从两条灯条的端点计算装甲板的四个顶点坐标，顺序为：top_left, top_right, bottom_right, bottom_left
