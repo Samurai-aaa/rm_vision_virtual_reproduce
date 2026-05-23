@@ -1,3 +1,6 @@
+# 此文件的作用是定义如何构建和安装simple_armor_detector包。
+# 它指定了所需的依赖项、编译选项、源文件以及安装规则。
+
 cmake_minimum_required(VERSION 3.8)
 project(simple_armor_detector)
 
@@ -15,7 +18,16 @@ find_package(visualization_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 
-add_executable(simple_detector_node src/simple_detector_node.cpp)
+include_directories(
+  include
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+add_executable(simple_detector_node
+  src/simple_detector_node.cpp
+  src/detector.cpp
+  src/pnp_solver.cpp
+)
 
 ament_target_dependencies(simple_detector_node
   rclcpp
@@ -25,10 +37,6 @@ ament_target_dependencies(simple_detector_node
   image_transport
   visualization_msgs
   geometry_msgs
-)
-
-target_include_directories(simple_detector_node PUBLIC
-  ${OpenCV_INCLUDE_DIRS}
 )
 
 target_link_libraries(simple_detector_node
@@ -44,6 +52,11 @@ install(DIRECTORY
   launch
   config
   DESTINATION share/${PROJECT_NAME}
+)
+
+install(DIRECTORY
+  include/
+  DESTINATION include
 )
 
 ament_package()

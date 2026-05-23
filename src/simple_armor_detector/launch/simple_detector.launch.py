@@ -1,3 +1,4 @@
+# 此文件的作用是启动simple_armor_detector节点，并加载配置文件simple_detector.yaml
 import os
 
 from ament_index_python.packages import get_package_share_directory

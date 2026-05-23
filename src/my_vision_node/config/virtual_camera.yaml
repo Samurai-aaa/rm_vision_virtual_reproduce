@@ -4,7 +4,7 @@
 virtual_camera_node:
   ros__parameters:
     # 图像输入源
-    source: "/home/samurai/Videos/test_640x480.mp4"
+    source: "/home/samurai/Videos/test2_640x480.mp4"
 
     # 发布的图像话题名称
     topic_name: "/image_raw"

@@ -10,6 +10,8 @@
 
 ## 项目结构
 
+## 项目结构
+
 ```text
 rm_ws/
 ├── README.md                         # 项目总说明：目标、环境、运行方式、个人贡献
@@ -36,18 +38,26 @@ rm_ws/
 │   │   ├── launch/
 │   │   │   └── virtual_detector.launch.py
 │   │   ├── src/
-│   │   │   ├── vision_node.cpp         # 摄像头/MP4/AVI转码视频 → /image_raw
+│   │   │   ├── vision_node.cpp         # 摄像头/MP4/转码视频 → /image_raw
 │   │   │   └── camera_info_node.cpp    # 虚拟相机内参 → /camera_info
 │   │   ├── CMakeLists.txt
 │   │   └── package.xml
 │   │
 │   ├── simple_armor_detector/         # 手写简化版装甲板检测器
+│   │   ├── include/
+│   │   │   └── simple_armor_detector/
+│   │   │       ├── armor.hpp           # Light / SimpleArmor 数据结构
+│   │   │       ├── detector.hpp        # OpenCV 检测模块声明
+│   │   │       ├── pnp_solver.hpp      # PnP 位姿解算模块声明
+│   │   │       └── simple_detector_node.hpp # ROS 2 节点声明
+│   │   ├── src/
+│   │   │   ├── detector.cpp            # 二值化、灯条检测、装甲板匹配、绘图
+│   │   │   ├── pnp_solver.cpp          # cv::solvePnP 位姿解算
+│   │   │   └── simple_detector_node.cpp # 订阅/发布、模块调度
 │   │   ├── config/
-│   │   │   └── simple_detector.yaml    # 阈值、灯条筛选、装甲板匹配参数
+│   │   │   └── simple_detector.yaml    # 阈值、灯条筛选、PnP 参数
 │   │   ├── launch/
 │   │   │   └── simple_detector.launch.py
-│   │   ├── src/
-│   │   │   └── simple_detector_node.cpp
 │   │   ├── CMakeLists.txt
 │   │   ├── package.xml
 │   │   └── README.md
@@ -71,7 +81,7 @@ rm_ws/
 
 ```markdown
 
-### 1. 编译
+### 编译
 
 ```bash
 
@@ -83,7 +93,18 @@ colcon build --symlink-install
 source install/setup.bash
 
 ```
-### 2. 启动虚拟相机、canera_info、simple_armor_detector
+
+### 终端 1：启动虚拟相机、camera_info 和官方 armor_detector
+
+```bash
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+ros2 launch my_vision_node virtual_detector.launch.py
+
+```
+### 终端 2：启动手写版 simple_armor_detector
 
 ```bash
 
@@ -94,7 +115,7 @@ source install/setup.bash
 ros2 launch simple_armor_detector simple_detector.launch.py
 
 ```
-### 3. 查看
+### 终端 3：查看检测效果图
 
 ```bash
 #结果图
