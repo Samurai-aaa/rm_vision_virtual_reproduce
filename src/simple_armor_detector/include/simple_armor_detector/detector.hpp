@@ -20,18 +20,19 @@ public:
     std::string enemy_color = "red";
     
     // 二值化参数
-    int binary_thres = 50;
+    int binary_thres = 65;
 
     // 灯条参数
     double min_light_area = 5.0;
-    double min_light_ratio = 1.2;
-    double max_light_angle = 60.0;
+    double min_light_ratio = 2.5;
+    double max_light_angle = 40.0;
     
     // 装甲板匹配参数
     double max_angle_diff = 15.0;
-    double max_height_diff_ratio = 0.5;
-    double max_y_diff_ratio = 0.6;
-
+    double max_height_diff_ratio = 0.3;
+    double max_y_diff_ratio = 0.3;
+    double max_armor_tilt_angle = 15.0;
+    
     // 装甲板类型判断参数
     double min_armor_ratio = 0.6;
     double max_armor_ratio = 4.0;
@@ -67,6 +68,8 @@ private:
   bool isValidLight(const Light & light);
 
   bool isValidArmorPair(const Light & left, const Light & right);
+
+    bool containLight(const Light & light_1, const Light & light_2, const std::vector<Light> & lights);
 
   std::vector<cv::Point2f> getArmorPoints(const Light & left, const Light & right);
 

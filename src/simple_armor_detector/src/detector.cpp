@@ -157,6 +157,10 @@ std::vector<SimpleArmor> Detector::matchArmors(const std::vector<Light> & lights
       if (!isValidArmorPair(left, right)) {                     // 过滤掉不符合条件的装甲板组合
         continue;
       }
+
+      if (containLight(left, right, lights)) {                  // 过滤掉被其他灯条遮挡的装甲板组合
+       continue;
+      }
       
       // 填充装甲板信息
       SimpleArmor armor;
@@ -202,6 +206,20 @@ bool Detector::isValidArmorPair(const Light & left, const Light & right)
 
   double x_diff = std::abs(left.center.x - right.center.x);
 
+  double y_center_diff = right.center.y - left.center.y;
+  double x_center_diff = right.center.x - left.center.x;
+
+  if (std::abs(x_center_diff) < 1e-3) {
+    return false;
+  }
+
+  double armor_tilt_angle =                                       // 计算装甲板倾斜角，筛选过于倾斜的装甲板组合
+    std::abs(std::atan2(y_center_diff, x_center_diff) * 180.0 / CV_PI);
+
+  if (armor_tilt_angle > params_.max_armor_tilt_angle) {
+    return false;
+  }
+
   if (x_diff < avg_height * 0.5) {                                // 筛选 x 坐标差过小的灯条组合，避免误匹配
     return false;
   }
@@ -215,8 +233,27 @@ bool Detector::isValidArmorPair(const Light & left, const Light & right)
   if (armor_ratio < params_.min_armor_ratio || armor_ratio > params_.max_armor_ratio) {   // 筛选装甲板长宽比不符合要求的灯条组合
     return false;
   }
-
+  
   return true;
+}
+
+bool Detector::containLight(                               // 判断灯条之间是否有其他灯条
+  const Light & light_1, const Light & light_2, const std::vector<Light> & lights)
+{
+  auto points = std::vector<cv::Point2f>{light_1.top, light_1.bottom, light_2.top, light_2.bottom};
+  auto bounding_rect = cv::boundingRect(points);
+
+  for (const auto & test_light : lights) {
+    if (test_light.center == light_1.center || test_light.center == light_2.center) continue;
+
+    if (
+      bounding_rect.contains(test_light.top) || bounding_rect.contains(test_light.bottom) ||
+      bounding_rect.contains(test_light.center)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 // 从两条灯条的端点计算装甲板的四个顶点坐标，顺序为：top_left, top_right, bottom_right, bottom_left

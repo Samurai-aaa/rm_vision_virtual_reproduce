@@ -68,6 +68,7 @@ void SimpleArmorDetectorNode::declareParams()
   this->declare_parameter<double>("min_armor_ratio", 0.6);
   this->declare_parameter<double>("max_armor_ratio", 4.0);
   this->declare_parameter<double>("max_light_x_distance", 250.0);
+  this->declare_parameter<double>("max_armor_tilt_angle", 10.0);
 
   this->declare_parameter<int>("morph_kernel_width", 3);
   this->declare_parameter<int>("morph_kernel_height", 9);
@@ -101,6 +102,8 @@ void SimpleArmorDetectorNode::loadParams()
   detector_params_.max_armor_ratio = this->get_parameter("max_armor_ratio").as_double();
   detector_params_.max_light_x_distance =
     this->get_parameter("max_light_x_distance").as_double();
+  detector_params_.max_armor_tilt_angle =
+    this->get_parameter("max_armor_tilt_angle").as_double();
 
   detector_params_.morph_kernel_width = this->get_parameter("morph_kernel_width").as_int();
   detector_params_.morph_kernel_height = this->get_parameter("morph_kernel_height").as_int();
