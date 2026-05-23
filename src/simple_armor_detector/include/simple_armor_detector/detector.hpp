@@ -20,7 +20,7 @@ public:
     std::string enemy_color = "red";
     
     // 二值化参数
-    int binary_threshold = 50;
+    int binary_thres = 50;
 
     // 灯条参数
     double min_light_area = 5.0;

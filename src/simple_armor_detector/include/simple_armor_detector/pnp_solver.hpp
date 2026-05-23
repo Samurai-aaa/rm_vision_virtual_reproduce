@@ -1,4 +1,4 @@
-#PnP位姿态解算器
+// PnP位姿态解算器
 #ifndef SIMPLE_ARMOR_DETECTOR__PNP_SOLVER_HPP_
 #define SIMPLE_ARMOR_DETECTOR__PNP_SOLVER_HPP_
 
