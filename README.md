@@ -75,20 +75,20 @@ rm_ws/
 │   │   ├── CMakeLists.txt
 │   │   └── package.xml
 │   │
-│   ├── simple_armor_tracker/                 // 自写tracker模块
+│   ├── simple_armor_tracker/                     # 自写 tracker 模块：
 │   │   ├── include/
 │   │   │   └── simple_armor_tracker/
-│   │   │       ├── extended_kalman_filter.hpp   # Kalman Filter 声明
-│   │   │       ├── tracker.hpp                  # Tracker 状态机、目标选择、滤波逻辑声明
-│   │   │       └── tracker_node.hpp             # ROS 2 节点声明
-│   │   ├── src/ 
-│   │   │   ├── extended_kalman_filter.cpp       # 6维状态 x,y,z,vx,vy,vz；3维观测 x,y,z
-│   │   │   ├── tracker.cpp                      # LOST/DETECTING/TRACKING/TEMP_LOST 状态机
-│   │   │   └── tracker_node.cpp                 # 订阅 /simple_detector/armors，发布 /simple_tracker/target 
+│   │   │       ├── extended_kalman_filter.hpp    # 通用 EKF 声明
+│   │   │       ├── tracker.hpp                   # Tracker 核心逻辑声明
+│   │   │       └── tracker_node.hpp              # ROS 2 节点声明
+│   │   ├── src/
+│   │   │   ├── extended_kalman_filter.cpp        # 状态转移、观测更新、协方差预测与修正
+│   │   │   ├── tracker.cpp                       # 实现状态机，目标匹配与 EKF 更新
+│   │   │   └── tracker_node.cpp                  # 过滤低置信度 armor，调用 Tracker，发布target和market
 │   │   ├── config/
-│   │   │   └── simple_tracker.yaml
+│   │   │   └── simple_tracker.yaml               # tracker 参数：匹配距离、yaw 阈值、丢失时间、EKF 噪声、置信度过滤等
 │   │   ├── launch/
-│   │   │   └── simple_tracker.launch.py
+│   │   │   └── simple_tracker.launch.py          # 启动 simple_armor_tracker 节点
 │   │   ├── CMakeLists.txt
 │   │   └── package.xml
 │   │
