@@ -3,18 +3,17 @@
 
 #include "simple_armor_tracker/tracker.hpp"
 
-#include <opencv2/opencv.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <geometry_msgs/msg/pose_array.hpp>
-#include <geometry_msgs/msg/pose_stamped.hpp>
-#include <std_msgs/msg/header.hpp>
-#include <visualization_msgs/msg/marker.hpp>
 #include <simple_armor_interfaces/msg/simple_armors.hpp>
+#include <simple_armor_interfaces/msg/simple_target.hpp>
+
+#include <std_srvs/srv/trigger.hpp>
+#include <visualization_msgs/msg/marker.hpp>
+#include <visualization_msgs/msg/marker_array.hpp>
 
 #include <memory>
 #include <string>
-#include <vector>
 
 namespace simple_armor_tracker
 {
@@ -25,36 +24,45 @@ public:
   SimpleArmorTrackerNode();
 
 private:
-  void declareParams();
-
-  void loadParams();
-
   void armorsCallback(
-  const simple_armor_interfaces::msg::SimpleArmors::ConstSharedPtr msg);
+    const simple_armor_interfaces::msg::SimpleArmors::SharedPtr armors_msg);
 
-  void publishTarget(
-    const std_msgs::msg::Header & header,
-    const Tracker::Result & result);
-
-  void publishMarker(
-    const std_msgs::msg::Header & header,
-    const Tracker::Result & result);
+  void publishMarkers(
+    const simple_armor_interfaces::msg::SimpleTarget & target_msg);
 
 private:
   std::string armors_topic_;
+  std::string target_frame_;
+
+  double max_armor_distance_ = 10.0;
+  double max_abs_z_ = 1.2;
   double min_confidence_ = 0.3;
 
-  Tracker::Params tracker_params_;
+  rclcpp::Time last_time_;
+  double dt_ = 0.033;
+  bool has_last_time_ = false;
+
+  double s2qxyz_ = 20.0;
+  double s2qyaw_ = 100.0;
+  double s2qr_ = 800.0;
+  double r_xyz_factor_ = 0.05;
+  double r_yaw_ = 0.02;
+  double lost_time_thres_ = 0.3;
 
   std::unique_ptr<Tracker> tracker_;
 
   rclcpp::Subscription<simple_armor_interfaces::msg::SimpleArmors>::SharedPtr armors_sub_;
 
-  rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr target_pub_;
-  rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub_;
+  rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr reset_tracker_srv_;
 
-  rclcpp::Time last_time_;
-  bool has_last_time_ = false;
+  rclcpp::Publisher<simple_armor_interfaces::msg::SimpleTarget>::SharedPtr target_pub_;
+
+  visualization_msgs::msg::Marker position_marker_;
+  visualization_msgs::msg::Marker linear_v_marker_;
+  visualization_msgs::msg::Marker angular_v_marker_;
+  visualization_msgs::msg::Marker armor_marker_;
+
+  rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
 };
 
 }  // namespace simple_armor_tracker

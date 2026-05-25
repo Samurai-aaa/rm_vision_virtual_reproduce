@@ -1,7 +1,9 @@
 #ifndef SIMPLE_ARMOR_TRACKER__EXTENDED_KALMAN_FILTER_HPP_
 #define SIMPLE_ARMOR_TRACKER__EXTENDED_KALMAN_FILTER_HPP_
 
-#include <opencv2/opencv.hpp>
+#include <Eigen/Dense>
+
+#include <functional>
 
 namespace simple_armor_tracker
 {
@@ -9,19 +11,49 @@ namespace simple_armor_tracker
 class ExtendedKalmanFilter
 {
 public:
-  ExtendedKalmanFilter();
+  using VecVecFunc = std::function<Eigen::VectorXd(const Eigen::VectorXd &)>;
+  using VecMatFunc = std::function<Eigen::MatrixXd(const Eigen::VectorXd &)>;
+  using VoidMatFunc = std::function<Eigen::MatrixXd()>;
 
-  void init(const cv::Point3f & position);
+  ExtendedKalmanFilter() = default;
 
-  cv::Point3f predict(double dt);
+  ExtendedKalmanFilter(
+    const VecVecFunc & f,
+    const VecVecFunc & h,
+    const VecMatFunc & j_f,
+    const VecMatFunc & j_h,
+    const VoidMatFunc & u_q,
+    const VecMatFunc & u_r,
+    const Eigen::MatrixXd & P0);
 
-  cv::Point3f update(const cv::Point3f & measurement);
+  void setState(const Eigen::VectorXd & x0);
 
-  cv::Point3f getPosition() const;
+  Eigen::VectorXd predict();
+
+  Eigen::VectorXd update(const Eigen::VectorXd & z);
 
 private:
-  cv::KalmanFilter kf_;
-  bool initialized_ = false;
+  VecVecFunc f;
+  VecVecFunc h;
+  VecMatFunc jacobian_f;
+  VecMatFunc jacobian_h;
+  VoidMatFunc update_Q;
+  VecMatFunc update_R;
+
+  Eigen::MatrixXd F;
+  Eigen::MatrixXd H;
+  Eigen::MatrixXd Q;
+  Eigen::MatrixXd R;
+  Eigen::MatrixXd K;
+
+  Eigen::MatrixXd P_pri;
+  Eigen::MatrixXd P_post;
+
+  int n = 0;
+  Eigen::MatrixXd I;
+
+  Eigen::VectorXd x_pri;
+  Eigen::VectorXd x_post;
 };
 
 }  // namespace simple_armor_tracker

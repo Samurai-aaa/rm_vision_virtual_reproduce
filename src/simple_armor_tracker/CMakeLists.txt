@@ -7,15 +7,18 @@ endif()
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_srvs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(OpenCV REQUIRED)
 find_package(simple_armor_interfaces REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(angles REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 include_directories(
   include
-  ${OpenCV_INCLUDE_DIRS}
+  ${EIGEN3_INCLUDE_DIRS}
 )
 
 add_executable(simple_tracker_node
@@ -26,14 +29,13 @@ add_executable(simple_tracker_node
 
 ament_target_dependencies(simple_tracker_node
   rclcpp
+  std_srvs
   geometry_msgs
   visualization_msgs
-  std_msgs
   simple_armor_interfaces
-)
-
-target_link_libraries(simple_tracker_node
-  ${OpenCV_LIBS}
+  angles
+  tf2
+  tf2_geometry_msgs
 )
 
 install(TARGETS

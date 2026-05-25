@@ -269,6 +269,7 @@ void SimpleArmorDetectorNode::publishPoses(
   pose_pub_->publish(pose_array);
 }
 
+// 发布装甲板信息
 void SimpleArmorDetectorNode::publishArmors(
   const std_msgs::msg::Header & header,
   const std::vector<SimpleArmor> & armors)
@@ -301,6 +302,7 @@ void SimpleArmorDetectorNode::publishArmors(
   for (const auto & armor : armors) {
     simple_armor_interfaces::msg::SimpleArmor armor_msg;
 
+    armor_msg.number = "unknown";
     armor_msg.type = armor.type;
     armor_msg.color = detector_params_.enemy_color;
 

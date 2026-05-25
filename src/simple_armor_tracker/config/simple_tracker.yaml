@@ -1,9 +1,19 @@
 simple_armor_tracker:
   ros__parameters:
     armors_topic: "/simple_detector/armors"
+    target_frame: "camera"
 
-    min_confidence: 0.3
+    min_confidence: 0.0
+    max_abs_z: 10.0
+    max_armor_distance: 100.0
 
-    max_match_distance: 0.4
-    tracking_threshold: 4
-    lost_threshold: 8
+    tracker.max_match_distance: 2.0
+    tracker.max_match_yaw_diff: 3.14
+    tracker.tracking_thres: 1
+    tracker.lost_time_thres: 1.0
+
+    ekf.sigma2_q_xyz: 20.0
+    ekf.sigma2_q_yaw: 100.0
+    ekf.sigma2_q_r: 800.0
+    ekf.r_xyz_factor: 0.05
+    ekf.r_yaw: 0.02

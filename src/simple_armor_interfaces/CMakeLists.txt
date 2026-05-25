@@ -14,6 +14,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Light.msg"
   "msg/SimpleArmor.msg"
   "msg/SimpleArmors.msg"
+  "msg/SimpleTarget.msg"
   DEPENDENCIES std_msgs geometry_msgs
 )
 

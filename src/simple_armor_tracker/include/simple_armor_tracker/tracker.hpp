@@ -3,18 +3,26 @@
 
 #include "simple_armor_tracker/extended_kalman_filter.hpp"
 
-#include <opencv2/opencv.hpp>
+#include <simple_armor_interfaces/msg/simple_armor.hpp>
+#include <simple_armor_interfaces/msg/simple_armors.hpp>
 
+#include <Eigen/Dense>
+
+#include <geometry_msgs/msg/quaternion.hpp>
+
+#include <memory>
 #include <string>
-#include <vector>
 
 namespace simple_armor_tracker
 {
 
+using SimpleArmor = simple_armor_interfaces::msg::SimpleArmor;
+using SimpleArmors = simple_armor_interfaces::msg::SimpleArmors;
+
 class Tracker
 {
 public:
-  enum class State
+  enum State
   {
     LOST,
     DETECTING,
@@ -22,49 +30,61 @@ public:
     TEMP_LOST
   };
 
-  struct Params
+  enum ArmorsNum
   {
-    double max_match_distance = 0.8;
-    int tracking_threshold = 3;
-    int lost_threshold = 10;
+    NORMAL_4 = 4,
+    BALANCE_2 = 2,
+    OUTPOST_3 = 3
   };
 
-  struct Result
-  {
-    bool has_target = false;
-    cv::Point3f position;
-    State state = State::LOST;
-  };
+  Tracker(double max_match_distance, double max_match_yaw_diff);
 
-  explicit Tracker(const Params & params);
+  void init(const SimpleArmors::SharedPtr & armors_msg);
 
-  Result update(const std::vector<cv::Point3f> & measurements, double dt);
+  void update(const SimpleArmors::SharedPtr & armors_msg);
 
-  State getState() const;
+  void initEKF(const SimpleArmor & armor);
 
-  std::string getStateString() const;
+  void updateArmorsNum(const SimpleArmor & armor);
 
-private:
-  bool selectMeasurement(
-    const std::vector<cv::Point3f> & measurements,
-    const cv::Point3f & predicted_position,
-    cv::Point3f & selected_measurement);
+  void handleArmorJump(const SimpleArmor & current_armor);
 
-  double distance3D(const cv::Point3f & a, const cv::Point3f & b) const;
+  double orientationToYaw(const geometry_msgs::msg::Quaternion & q);
 
-private:
-  Params params_;
+  Eigen::Vector3d getArmorPositionFromState(const Eigen::VectorXd & x);
 
-  ExtendedKalmanFilter ekf_;
+public:
+  ExtendedKalmanFilter ekf;
 
-  State state_ = State::LOST;
+  State tracker_state = LOST;
 
-  bool initialized_ = false;
+  std::string tracked_id;
+
+  SimpleArmor tracked_armor;
+
+  Eigen::VectorXd measurement;
+
+  Eigen::VectorXd target_state;
+
+  int tracking_thres = 5;
+  int lost_thres = 10;
 
   int detect_count_ = 0;
   int lost_count_ = 0;
 
-  cv::Point3f last_position_;
+  double info_position_diff = 0.0;
+  double info_yaw_diff = 0.0;
+
+  ArmorsNum tracked_armors_num = NORMAL_4;
+
+  double another_r = 0.26;
+  double dz = 0.0;
+
+private:
+  double max_match_distance_;
+  double max_match_yaw_diff_;
+
+  double last_yaw_ = 0.0;
 };
 
 }  // namespace simple_armor_tracker

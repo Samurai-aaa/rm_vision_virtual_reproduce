@@ -2,80 +2,61 @@
 
 namespace simple_armor_tracker
 {
-
-ExtendedKalmanFilter::ExtendedKalmanFilter()
+// 初始化 EKF：保存状态模型、观测模型、雅可比矩阵和噪声模型
+ExtendedKalmanFilter::ExtendedKalmanFilter(
+  const VecVecFunc & f,
+  const VecVecFunc & h,
+  const VecMatFunc & j_f,
+  const VecMatFunc & j_h,
+  const VoidMatFunc & u_q,
+  const VecMatFunc & u_r,
+  const Eigen::MatrixXd & P0)
+: f(f),
+  h(h),
+  jacobian_f(j_f),
+  jacobian_h(j_h),
+  update_Q(u_q),
+  update_R(u_r),
+  P_post(P0),
+  n(P0.rows()),
+  I(Eigen::MatrixXd::Identity(n, n)),
+  x_pri(n),
+  x_post(n)
 {
-  // 状态: x, y, z, vx, vy, vz
-  // 观测: x, y, z
-  kf_ = cv::KalmanFilter(6, 3, 0, CV_32F);
-
-  kf_.transitionMatrix = cv::Mat::eye(6, 6, CV_32F);
-
-  kf_.measurementMatrix = cv::Mat::zeros(3, 6, CV_32F);
-  kf_.measurementMatrix.at<float>(0, 0) = 1.0f;
-  kf_.measurementMatrix.at<float>(1, 1) = 1.0f;
-  kf_.measurementMatrix.at<float>(2, 2) = 1.0f;
-
-  cv::setIdentity(kf_.processNoiseCov, cv::Scalar(1e-2));
-  cv::setIdentity(kf_.measurementNoiseCov, cv::Scalar(5e-2));
-  cv::setIdentity(kf_.errorCovPost, cv::Scalar(1.0));
 }
 
-void ExtendedKalmanFilter::init(const cv::Point3f & position)
+// 设置 EKF 当前状态，用于初始化或状态重置
+void ExtendedKalmanFilter::setState(const Eigen::VectorXd & x0)
 {
-  kf_.statePost = cv::Mat::zeros(6, 1, CV_32F);
-
-  kf_.statePost.at<float>(0) = position.x;
-  kf_.statePost.at<float>(1) = position.y;
-  kf_.statePost.at<float>(2) = position.z;
-
-  kf_.statePost.at<float>(3) = 0.0f;
-  kf_.statePost.at<float>(4) = 0.0f;
-  kf_.statePost.at<float>(5) = 0.0f;
-
-  initialized_ = true;
+  x_post = x0;
 }
 
-cv::Point3f ExtendedKalmanFilter::predict(double dt)
+Eigen::VectorXd ExtendedKalmanFilter::predict()
 {
-  if (!initialized_) {
-    return cv::Point3f(0.0f, 0.0f, 0.0f);
-  }
+  F = jacobian_f(x_post);
+  Q = update_Q();
 
-  kf_.transitionMatrix.at<float>(0, 3) = static_cast<float>(dt);
-  kf_.transitionMatrix.at<float>(1, 4) = static_cast<float>(dt);
-  kf_.transitionMatrix.at<float>(2, 5) = static_cast<float>(dt);
+  x_pri = f(x_post);
+  P_pri = F * P_post * F.transpose() + Q;
 
-  cv::Mat pred = kf_.predict();
+  x_post = x_pri;
+  P_post = P_pri;
 
-  return cv::Point3f(
-    pred.at<float>(0),
-    pred.at<float>(1),
-    pred.at<float>(2));
+  return x_pri;
 }
 
-cv::Point3f ExtendedKalmanFilter::update(const cv::Point3f & measurement)
+// EKF 预测：根据上一帧状态和运动模型预测当前状态
+Eigen::VectorXd ExtendedKalmanFilter::update(const Eigen::VectorXd & z)
 {
-  cv::Mat measure = cv::Mat::zeros(3, 1, CV_32F);
+  H = jacobian_h(x_pri);
+  R = update_R(z);
 
-  measure.at<float>(0) = measurement.x;
-  measure.at<float>(1) = measurement.y;
-  measure.at<float>(2) = measurement.z;
+  K = P_pri * H.transpose() * (H * P_pri * H.transpose() + R).inverse();
 
-  cv::Mat estimated = kf_.correct(measure);
+  x_post = x_pri + K * (z - h(x_pri));
+  P_post = (I - K * H) * P_pri;
 
-  return cv::Point3f(
-    estimated.at<float>(0),
-    estimated.at<float>(1),
-    estimated.at<float>(2));
-}
-
-cv::Point3f ExtendedKalmanFilter::getPosition() const
-{
-  return cv::Point3f(
-    kf_.statePost.at<float>(0),
-    kf_.statePost.at<float>(1),
-    kf_.statePost.at<float>(2));
+  return x_post;
 }
 
 }  // namespace simple_armor_tracker
