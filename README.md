@@ -86,9 +86,9 @@ rm_ws/
 │   │   │   ├── tracker.cpp                       # 实现状态机，目标匹配与 EKF 更新
 │   │   │   └── tracker_node.cpp                  # 过滤低置信度 armor，调用 Tracker，发布target和market
 │   │   ├── config/
-│   │   │   └── simple_tracker.yaml               # tracker 参数：匹配距离、yaw 阈值、丢失时间、EKF 噪声、置信度过滤等
+│   │   │   └── simple_tracker.yaml
 │   │   ├── launch/
-│   │   │   └── simple_tracker.launch.py          # 启动 simple_armor_tracker 节点
+│   │   │   └── simple_tracker.launch.py
 │   │   ├── CMakeLists.txt
 │   │   └── package.xml
 │   │
