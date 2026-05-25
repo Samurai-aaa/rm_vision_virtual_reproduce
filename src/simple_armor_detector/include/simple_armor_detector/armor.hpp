@@ -37,6 +37,7 @@ struct SimpleArmor            // 装甲板结构体
   std::string type = "small";
 
   float distance_to_image_center = 0.0f;
+  float confidence = 1.0f;
 
   cv::Mat rvec;
   cv::Mat tvec;

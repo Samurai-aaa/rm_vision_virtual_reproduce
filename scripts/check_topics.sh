@@ -1,19 +1,24 @@
 #!/bin/bash
+set -e
 
 source /opt/ros/humble/setup.bash
 source ~/rm_ws/install/setup.bash
 
-echo "========== Topics =========="
-ros2 topic list -t
-
-echo ""
 echo "========== /image_raw =========="
-ros2 topic info /image_raw
+ros2 topic info /image_raw || true
 
-echo ""
+echo
 echo "========== /camera_info =========="
-ros2 topic info /camera_info
+ros2 topic info /camera_info || true
 
-echo ""
+echo
+echo "========== simple topics =========="
+ros2 topic list | grep simple || true
+
+echo
 echo "========== detector topics =========="
-ros2 topic list | grep detector
+ros2 topic list | grep detector || true
+
+echo
+echo "========== tracker topics =========="
+ros2 topic list | grep tracker || true

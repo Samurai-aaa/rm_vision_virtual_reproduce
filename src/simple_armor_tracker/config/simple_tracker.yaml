@@ -1,0 +1,9 @@
+simple_armor_tracker:
+  ros__parameters:
+    armors_topic: "/simple_detector/armors"
+
+    min_confidence: 0.3
+
+    max_match_distance: 0.4
+    tracking_threshold: 4
+    lost_threshold: 8

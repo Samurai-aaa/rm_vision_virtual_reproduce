@@ -13,6 +13,7 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <std_msgs/msg/header.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
+#include <simple_armor_interfaces/msg/simple_armors.hpp>
 
 #include <memory>
 #include <string>
@@ -48,6 +49,10 @@ private:
   void publishPoses(
     const std_msgs::msg::Header & header,
     const std::vector<SimpleArmor> & armors);
+    
+  void publishArmors(
+    const std_msgs::msg::Header & header,
+    const std::vector<SimpleArmor> & armors);
 
 private:
   std::string image_topic_;
@@ -69,6 +74,7 @@ private:
 
   rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_pub_;
   rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr pose_pub_;
+  rclcpp::Publisher<simple_armor_interfaces::msg::SimpleArmors>::SharedPtr armors_pub_;
 };
 
 }

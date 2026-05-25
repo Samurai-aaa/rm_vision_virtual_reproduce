@@ -21,7 +21,7 @@ simple_armor_detector:
     max_height_diff_ratio: 0.6
     max_y_diff_ratio: 0.5
     min_armor_ratio: 0.8
-    max_armor_ratio: 3.2
+    max_armor_ratio: 2.8
     max_light_x_distance: 130.0
     max_armor_tilt_angle: 10.0
 

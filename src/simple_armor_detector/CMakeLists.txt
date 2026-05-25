@@ -17,6 +17,7 @@ find_package(image_transport REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(simple_armor_interfaces REQUIRED)
 
 include_directories(
   include
@@ -37,6 +38,7 @@ ament_target_dependencies(simple_detector_node
   image_transport
   visualization_msgs
   geometry_msgs
+  simple_armor_interfaces
 )
 
 target_link_libraries(simple_detector_node

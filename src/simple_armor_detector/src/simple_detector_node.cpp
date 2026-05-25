@@ -4,6 +4,9 @@
 
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
+#include <simple_armor_interfaces/msg/simple_armors.hpp>
+#include <simple_armor_interfaces/msg/simple_armor.hpp>
+#include <simple_armor_interfaces/msg/light.hpp>
 
 #include <cmath>
 #include <memory>
@@ -39,6 +42,9 @@ SimpleArmorDetectorNode::SimpleArmorDetectorNode()
 
   pose_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>(
     "/simple_detector/poses", 10);
+    
+  armors_pub_ = this->create_publisher<simple_armor_interfaces::msg::SimpleArmors>(
+    "/simple_detector/armors", 10);
 
   RCLCPP_INFO(this->get_logger(), "simple_armor_detector v2 started.");
   RCLCPP_INFO(this->get_logger(), "Subscribe image topic: %s", image_topic_.c_str());
@@ -168,6 +174,7 @@ void SimpleArmorDetectorNode::imageCallback(
 
   publishMarkers(msg->header, armors);
   publishPoses(msg->header, armors);
+  publishArmors(msg->header, armors);
 
   publishImage(binary_pub_, binary, msg->header, "mono8");
   publishImage(result_pub_, result, msg->header, "bgr8");
@@ -260,6 +267,77 @@ void SimpleArmorDetectorNode::publishPoses(
   }
 
   pose_pub_->publish(pose_array);
+}
+
+void SimpleArmorDetectorNode::publishArmors(
+  const std_msgs::msg::Header & header,
+  const std::vector<SimpleArmor> & armors)
+{
+  simple_armor_interfaces::msg::SimpleArmors armors_msg;
+  armors_msg.header = header;
+
+  auto toPointMsg = [](const cv::Point2f & p) {
+    geometry_msgs::msg::Point point;
+    point.x = p.x;
+    point.y = p.y;
+    point.z = 0.0;
+    return point;
+  };
+
+  auto toLightMsg = [&toPointMsg](const Light & light) {
+    simple_armor_interfaces::msg::Light light_msg;
+
+    light_msg.top = toPointMsg(light.top);
+    light_msg.bottom = toPointMsg(light.bottom);
+    light_msg.center = toPointMsg(light.center);
+
+    light_msg.width = light.width;
+    light_msg.height = light.height;
+    light_msg.angle = light.angle;
+
+    return light_msg;
+  };
+
+  for (const auto & armor : armors) {
+    simple_armor_interfaces::msg::SimpleArmor armor_msg;
+
+    armor_msg.type = armor.type;
+    armor_msg.color = detector_params_.enemy_color;
+
+    armor_msg.confidence = armor.confidence;
+    armor_msg.distance_to_image_center = armor.distance_to_image_center;
+
+    armor_msg.center = toPointMsg(armor.center);
+
+    if (armor.points.size() == 4) {
+      armor_msg.top_left = toPointMsg(armor.points[0]);
+      armor_msg.top_right = toPointMsg(armor.points[1]);
+      armor_msg.bottom_right = toPointMsg(armor.points[2]);
+      armor_msg.bottom_left = toPointMsg(armor.points[3]);
+    }
+
+    armor_msg.left_light = toLightMsg(armor.left_light);
+    armor_msg.right_light = toLightMsg(armor.right_light);
+
+    armor_msg.has_pose = armor.has_pose;
+
+    if (armor.has_pose && !armor.tvec.empty()) {
+      armor_msg.pose.position.x = armor.tvec.at<double>(0);
+      armor_msg.pose.position.y = armor.tvec.at<double>(1);
+      armor_msg.pose.position.z = armor.tvec.at<double>(2);
+
+      armor_msg.pose.orientation.x = 0.0;
+      armor_msg.pose.orientation.y = 0.0;
+      armor_msg.pose.orientation.z = 0.0;
+      armor_msg.pose.orientation.w = 1.0;
+    } else {
+      armor_msg.pose.orientation.w = 1.0;
+    }
+
+    armors_msg.armors.emplace_back(armor_msg);
+  }
+
+  armors_pub_->publish(armors_msg);
 }
 
 }

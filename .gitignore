@@ -1,33 +1,43 @@
-# colcon build outputs
+# ROS 2 / colcon build outputs
 build/
 install/
 log/
 
-# VS Code local settings
+# VS Code / IDE
 .vscode/
+.idea/
 
 # Python cache
 __pycache__/
 *.pyc
-*.pyo
 
-# CMake cache
+# System files
+.DS_Store
+Thumbs.db
+
+# ROS bag files
+bags/
+*.bag
+*.db3
+*.mcap
+
+# Local test videos
+videos/
+*.avi
+*.mkv
+*.mov
+
+# Temporary files
+*.tmp
+*.log
+*.swp
+*~
+
+# CMake temporary files
 CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
 
-# ROS bag files
-*.db3
-*.mcap
-rosbag2_*/
-
-# Temporary files
-*.tmp
-*.swp
-*.swo
-*~
-
-# OS files
-.DS_Store
-Thumbs.db
+# Generated compile commands
+compile_commands.json

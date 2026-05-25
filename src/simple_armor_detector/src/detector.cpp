@@ -189,7 +189,10 @@ std::vector<SimpleArmor> Detector::matchArmors(const std::vector<Light> & lights
     candidate.left_index = i;
     candidate.right_index = j;
     candidate.armor = armor;
-    candidate.score = calcArmorScore(left, right);
+    
+    double score = calcArmorScore(left, right);
+    armor.confidence = static_cast<float>(1.0 / (1.0 + score));
+    candidate.score = score;
 
     candidates.emplace_back(candidate);
   }
