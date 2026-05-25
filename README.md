@@ -14,14 +14,16 @@ rm_ws/
 ├── .gitignore
 │
 ├──docs
-│   ├── 01_technology_report.md
+│   ├── 01_technology_report.md        // 技术报告文档
 │   ├── 02_virtual_camera_node.md
 │   ├── 03_simple_armor_detector.md.md
 │   ├── 04_camera_info_and_pnp.md
 │   ├── 05_simple_armor_interfaces.md
 │   ├── 06_simple_armor_tracker.md
 │   └── image.png
-│
+│ 
+├──media
+│   └── test_video                     // 测试视频
 │
 ├──scripts
 │   ├── build_simple.sh
