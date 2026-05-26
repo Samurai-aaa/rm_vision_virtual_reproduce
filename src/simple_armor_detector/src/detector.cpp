@@ -314,7 +314,6 @@ double Detector::calcArmorScore(const Light & left, const Light & right)
   const double x_diff = std::abs(left.center.x - right.center.x);
   const double armor_ratio = x_diff / avg_height;
 
-  // 你的场景主要是小装甲板候选，2.0~2.5 一般比较合理
   const double preferred_ratio = 2.2;
   const double ratio_score = std::abs(armor_ratio - preferred_ratio);
 
