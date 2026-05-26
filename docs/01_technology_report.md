@@ -286,8 +286,148 @@ TEMP_LOST:
 在本项目中，我使用 AI 工具辅助完成了代码阅读、问题定位、结构规划和文档整理，但核心实现和调试过程仍然由我在本地环境中逐步验证。ROS2的库非常大，对于一个初学者来说，熟练掌握各种函数和串口通信是非常难的，ai在这个过程中发挥了巨大的作用——通过与ai对话，我很快地了解各种函数的功能以及各种信息的格式以及传递方式；同时，适当的ai coding帮助了我对于基础功能的快速实现。
 
 ---
+## 6. 编译部署流程
 
-## 6. 当前不足与后续改进
+### 6.1 环境准备
+
+系统环境：
+
+```text
+Ubuntu 22.04
+ROS 2 Humble
+OpenCV
+cv_bridge
+image_transport
+Eigen3
+tf2
+tf2_geometry_msgs
+```
+
+每个终端运行前需要 source：
+
+```bash
+source /opt/ros/humble/setup.bash
+source ~/rm_ws/install/setup.bash
+```
+
+### 6.2 编译流程
+
+进入工作空间：
+
+```bash
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+```
+
+推荐先编译接口包：
+
+```bash
+colcon build --packages-select simple_armor_interfaces --symlink-install
+source install/setup.bash
+```
+
+检查接口：
+
+```bash
+ros2 interface show simple_armor_interfaces/msg/SimpleArmors
+ros2 interface show simple_armor_interfaces/msg/SimpleTarget
+```
+
+然后编译 detector 和 tracker：
+
+```bash
+colcon build --packages-select \
+  simple_armor_detector \
+  simple_armor_tracker \
+  --symlink-install
+
+source install/setup.bash
+```
+
+也可以整体编译：
+
+```bash
+colcon build --symlink-install
+source install/setup.bash
+```
+
+### 6.3 启动流程
+
+#### 终端 1：启动虚拟相机和 camera_info
+
+```bash
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+ros2 launch my_vision_node virtual_detector.launch.py
+```
+
+该 launch 启动：
+
+```text
+vision_node
+camera_info_node
+官方 armor_detector，可用于对照
+```
+
+#### 终端 2：启动手写 detector
+
+```bash
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+ros2 launch simple_armor_detector simple_detector.launch.py
+```
+
+#### 终端 3：启动手写 tracker
+
+```bash
+cd ~/rm_ws
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+
+ros2 launch simple_armor_tracker simple_tracker.launch.py
+```
+
+#### 终端 4：查看结果图
+
+查看手写 detector 结果：
+
+```bash
+ros2 run rqt_image_view rqt_image_view /simple_detector/result_img
+```
+
+查看二值图：
+
+```bash
+ros2 run rqt_image_view rqt_image_view /simple_detector/binary_img
+```
+
+### 6.4 topic 检查
+
+检查 detector 输出：
+
+```bash
+ros2 topic echo /simple_detector/armors --once
+```
+
+检查 tracker 输出：
+
+```bash
+ros2 topic echo /simple_tracker/target --once
+```
+
+检查 tracker 频率：
+
+```bash
+ros2 topic hz /simple_tracker/target
+```
+
+---
+
+## 7. 当前不足与后续改进
 
 当前项目仍存在一些简化：
 
@@ -321,7 +461,7 @@ TEMP_LOST:
 
 ---
 
-## 9. 总结
+## 8. 总结
 
 本项目完成了一个无实体小车、无工业相机条件下的 RoboMaster 自瞄视觉复现工程。项目不仅运行了官方 `rm_auto_aim` 中的部分模块，还自行实现了虚拟相机输入、简化装甲板检测器、自定义接口和官方风格 EKF tracker。
 
