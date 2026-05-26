@@ -363,14 +363,6 @@ source install/setup.bash
 ros2 launch my_vision_node virtual_detector.launch.py
 ```
 
-该 launch 启动：
-
-```text
-vision_node
-camera_info_node
-官方 armor_detector，可用于对照
-```
-
 #### 终端 2：启动手写 detector
 
 ```bash
