@@ -18,6 +18,8 @@ find_package(visualization_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(simple_armor_interfaces REQUIRED)
+find_package(tf2 REQUIRED)
+find_package(tf2_geometry_msgs REQUIRED)
 
 include_directories(
   include
@@ -38,6 +40,8 @@ ament_target_dependencies(simple_detector_node
   image_transport
   visualization_msgs
   geometry_msgs
+  tf2
+  tf2_geometry_msgs
   simple_armor_interfaces
 )
 

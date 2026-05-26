@@ -1,6 +1,9 @@
 #include "simple_armor_detector/simple_detector_node.hpp"
 
 #include <cv_bridge/cv_bridge.h>
+#include <tf2/LinearMath/Matrix3x3.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2_geometry_msgs/tf2_geometry_msgs.hpp>
 
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/pose.hpp>
@@ -15,6 +18,32 @@
 
 namespace simple_armor_detector
 {
+// 把 PnP rvec 写入 pose.orientation
+geometry_msgs::msg::Quaternion rvecToQuaternion(const cv::Mat & rvec)
+{
+  cv::Mat rotation_matrix;
+  cv::Rodrigues(rvec, rotation_matrix);
+
+  cv::Mat rotation_matrix_64f;
+  rotation_matrix.convertTo(rotation_matrix_64f, CV_64F);
+
+  tf2::Matrix3x3 tf_rotation(
+    rotation_matrix_64f.at<double>(0, 0),
+    rotation_matrix_64f.at<double>(0, 1),
+    rotation_matrix_64f.at<double>(0, 2),
+    rotation_matrix_64f.at<double>(1, 0),
+    rotation_matrix_64f.at<double>(1, 1),
+    rotation_matrix_64f.at<double>(1, 2),
+    rotation_matrix_64f.at<double>(2, 0),
+    rotation_matrix_64f.at<double>(2, 1),
+    rotation_matrix_64f.at<double>(2, 2));
+
+  tf2::Quaternion q;
+  tf_rotation.getRotation(q);
+  q.normalize();
+
+  return tf2::toMsg(q);
+}
 // 构造函数
 SimpleArmorDetectorNode::SimpleArmorDetectorNode()
 : Node("simple_armor_detector")
@@ -253,15 +282,18 @@ void SimpleArmorDetectorNode::publishPoses(
     }
 
     geometry_msgs::msg::Pose pose;
-
-    pose.position.x = armor.tvec.at<double>(0);     // 直接使用 PnP 求解的 tvec 作为位置
+    pose.position.x = armor.tvec.at<double>(0);
     pose.position.y = armor.tvec.at<double>(1);
     pose.position.z = armor.tvec.at<double>(2);
-
-    pose.orientation.x = 0.0;                       // 构造四元数，假设装甲板面朝前方
-    pose.orientation.y = 0.0;
-    pose.orientation.z = 0.0;
-    pose.orientation.w = 1.0;
+ 
+    if (!armor.rvec.empty()) {                      // 如果有旋转向量，则转换为四元数
+      pose.orientation = rvecToQuaternion(armor.rvec);
+    } else {
+      pose.orientation.x = 0.0;                     // 构造四元数，假设装甲板面朝前方
+      pose.orientation.y = 0.0;
+      pose.orientation.z = 0.0;
+      pose.orientation.w = 1.0;
+    }
 
     pose_array.poses.emplace_back(pose);
   }
@@ -302,7 +334,7 @@ void SimpleArmorDetectorNode::publishArmors(
   for (const auto & armor : armors) {
     simple_armor_interfaces::msg::SimpleArmor armor_msg;
 
-    armor_msg.number = "unknown";
+    armor_msg.number = "0";
     armor_msg.type = armor.type;
     armor_msg.color = detector_params_.enemy_color;
 
@@ -323,16 +355,18 @@ void SimpleArmorDetectorNode::publishArmors(
 
     armor_msg.has_pose = armor.has_pose;
 
-    if (armor.has_pose && !armor.tvec.empty()) {
+    armor_msg.has_pose = armor.has_pose;
+
+    if (armor.has_pose && !armor.tvec.empty() && !armor.rvec.empty()) { // 只有在 PnP 成功且有旋转向量时才填充位姿信息
       armor_msg.pose.position.x = armor.tvec.at<double>(0);
       armor_msg.pose.position.y = armor.tvec.at<double>(1);
       armor_msg.pose.position.z = armor.tvec.at<double>(2);
 
+      armor_msg.pose.orientation = rvecToQuaternion(armor.rvec);        // 如果有旋转向量，则转换为四元数
+    } else {
       armor_msg.pose.orientation.x = 0.0;
       armor_msg.pose.orientation.y = 0.0;
       armor_msg.pose.orientation.z = 0.0;
-      armor_msg.pose.orientation.w = 1.0;
-    } else {
       armor_msg.pose.orientation.w = 1.0;
     }
 
