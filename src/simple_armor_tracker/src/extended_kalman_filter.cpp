@@ -31,6 +31,7 @@ void ExtendedKalmanFilter::setState(const Eigen::VectorXd & x0)
   x_post = x0;
 }
 
+// EKF 预测：根据上一帧状态和运动模型预测当前状态
 Eigen::VectorXd ExtendedKalmanFilter::predict()
 {
   F = jacobian_f(x_post);
@@ -45,7 +46,7 @@ Eigen::VectorXd ExtendedKalmanFilter::predict()
   return x_pri;
 }
 
-// EKF 预测：根据上一帧状态和运动模型预测当前状态
+// EKF 更新：利用当前观测修正预测状态
 Eigen::VectorXd ExtendedKalmanFilter::update(const Eigen::VectorXd & z)
 {
   H = jacobian_h(x_pri);
