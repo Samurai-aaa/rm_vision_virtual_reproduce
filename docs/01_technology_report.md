@@ -257,13 +257,15 @@ TEMP_LOST:
 flowchart TD
     A["上一帧 x_post, P_post"]
     A --> B["Predict: x_pri = f(x_post)"]
-    B --> C["对预测目标中心公式求偏导，得到F(j_f)"]
+    B --> C["对状态预测函数 f 求偏导，得到 F = j_f"]
+    Q["过程噪声矩阵Q = G * σ² * Gᵀ"] --> D
     C --> D["P_pri = F * P_post * F_T + Q"]
     A --> B1["预测观测 z_pred = h(x_pri)"]
     B1 --> C1["对预测观测公式求偏导，得到H(j_h)"]
     B1 --> D1
     Z["真实观测 z = measurement"]
     Z --> D1["残差 residual = z - z_pred"]
+    R["观测噪声矩阵R"]--> E
     D --> E["K = P_pri * H_T * inv(H * P_pri * H_T + R)"]
     C1 --> E
     E --> F
